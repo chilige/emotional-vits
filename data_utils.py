@@ -148,7 +148,7 @@ class TextAudioCollate():
             wav_padded[i, :, :wav.size(1)] = wav
             wav_lengths[i] = wav.size(1)
 
-            emo[:] = row[3]
+            emo[i, :] = row[3]
 
         if self.return_ids:
             return text_padded, text_lengths, spec_padded, spec_lengths, wav_padded, wav_lengths, ids_sorted_decreasing
@@ -369,7 +369,10 @@ class DistributedBucketSampler(torch.utils.data.distributed.DistributedSampler):
   
           # add extra samples to make it evenly divisible
           rem = num_samples_bucket - len_bucket
-          ids_bucket = ids_bucket + ids_bucket * (rem // len_bucket) + ids_bucket[:(rem % len_bucket)]
+          if len_bucket == 0:
+             ids_bucket = ids_bucket + ids_bucket * rem
+          else:
+             ids_bucket = ids_bucket + ids_bucket * (rem // len_bucket) + ids_bucket[:(rem % len_bucket)]
   
           # subsample
           ids_bucket = ids_bucket[self.rank::self.num_replicas]
